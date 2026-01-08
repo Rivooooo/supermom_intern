@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supermom CSV Review</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- PapaParse for CSV -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <!-- SheetJS for Excel Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <div class="header-left">
+                <h1>Supermom Review</h1>
+                <span id="row-counter" class="badge hidden">Row 0 of 0</span>
+            </div>
+            <div class="header-right">
+                <input type="file" id="csv-upload" accept=".csv" class="hidden">
+                <button id="btn-upload" class="btn btn-primary">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                    Upload CSV
+                </button>
+                <button id="btn-export" class="btn btn-success hidden">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    Export Excel
+                </button>
+            </div>
+        </header>
+
+        <main id="main-interface" class="hidden">
+            <div class="split-view">
+                <!-- Left Panel: Image Viewer -->
+                <div class="panel left-panel">
+                    <div class="panel-header">
+                        <h2>USG / Book Photo</h2>
+                        <div class="image-controls">
+                            <button id="btn-rotate-left" class="btn-icon" title="Rotate Left">↺</button>
+                            <button id="btn-rotate-right" class="btn-icon" title="Rotate Right">↻</button>
+                            <button id="btn-toggle-image" class="btn btn-toggle">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="17 8 12 3 7 8"></polyline>
+                                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                                </svg>
+                                Switch to Book
+                            </button>
+                        </div>
+                    </div>
+                    <div class="image-container" id="image-container">
+                        <div id="image-wrapper">
+                            <img id="main-image" src="" alt="Review Image">
+                        </div>
+                        <div id="image-error" class="error-message hidden">
+                            <p>Missing/broken links, check the email <span id="error-email"></span> for more detail</p>
+                        </div>
+                        <div id="image-loading" class="loading-spinner hidden">
+                            <div class="spinner"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Panel: Info & Actions -->
+                <div class="panel right-panel">
+                    <div class="info-section">
+                        <div class="field-group">
+                            <label>Full Name</label>
+                            <div id="display-name" class="read-only-field"></div>
+                        </div>
+                        <div class="field-group">
+                            <label>Email</label>
+                            <div id="display-email" class="read-only-field"></div>
+                        </div>
+                        <div class="field-group">
+                            <label>Current EDD (CSV)</label>
+                            <div id="display-edd" class="read-only-field"></div>
+                        </div>
+                    </div>
+
+                    <div class="edd-calculator-section">
+                        <h3>EDD Calculator</h3>
+                        <div class="calc-grid">
+                            <div class="field-group">
+                                <label>Gestational Age</label>
+                                <div class="age-inputs">
+                                    <input type="number" id="calc-weeks" placeholder="Weeks" min="0" max="42">
+                                    <input type="number" id="calc-days" placeholder="Days" min="0" max="6">
+                                </div>
+                            </div>
+                            <div class="field-group">
+                                <label>USG Date</label>
+                                <input type="date" id="calc-date">
+                            </div>
+                        </div>
+                        <button id="btn-calculate" class="btn btn-secondary full-width">Calculate EDD</button>
+                        <div id="calc-result" class="calc-result hidden">
+                            Calculated EDD: <span id="result-date"></span>
+                        </div>
+                    </div>
+
+                    <div class="action-section">
+                        <h3>Review Actions</h3>
+
+                        <div class="field-group">
+                            <label>Reason (Column BL)</label>
+                            <select id="input-reason">
+                                <option value="">(Select Reason)</option>
+                                <option value="Blurry Image">Blurry Image</option>
+                                <option value="EDD not match">EDD not match</option>
+                                <option value="No EDD data">No EDD data</option>
+                                <option value="No Name">No Name</option>
+                                <option value="No USG Photo">No USG Photo</option>
+                                <option value="Other">Other</option>
+                            </select>
+                            <input type="text" id="input-reason-other" class="hidden"
+                                placeholder="Specify other reason...">
+                        </div>
+
+                        <div class="review-controls">
+                            <button id="btn-valid" class="btn btn-success-outline">
+                                <span class="icon">✓</span> Valid
+                            </button>
+                            <button id="btn-invalid" class="btn btn-danger-outline">
+                                <span class="icon">✕</span> Invalid
+                            </button>
+                            <button id="btn-clear" class="btn btn-secondary-outline">
+                                <span class="icon">⊘</span> Clear
+                            </button>
+                        </div>
+
+                        <div class="nav-controls">
+                            <button id="btn-prev" class="btn btn-ghost">
+                                ← Previous
+                            </button>
+                            <button id="btn-next" class="btn btn-ghost">
+                                Next →
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <div id="completion-overlay" class="overlay hidden">
+            <div class="overlay-content">
+                <h2>All rows are done! 🎉</h2>
+                <p>You have reviewed all matching rows.</p>
+                <button id="btn-download-final" class="btn btn-success btn-large">Download Result</button>
+            </div>
+        </div>
+
+        <div id="loading-overlay" class="loading-overlay hidden">
+            <div class="loading-panel">
+                <div id="loading-title" class="loading-title">Processing...</div>
+                <div class="loading-progress">
+                    <div id="loading-bar" class="loading-bar"></div>
+                </div>
+                <div id="loading-percent" class="loading-percent">0%</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
