@@ -83,32 +83,6 @@ const els = {
     btnDownloadFinal: document.getElementById('btn-download-final')
 };
 
-
-// Loading Overlay Helpers
-function showLoading(title = 'Processing...', options = {}) {
-    els.loadingOverlay.classList.remove('hidden');
-    els.loadingTitle.textContent = title;
-    
-    if (options.indeterminate) {
-        els.loadingBar.style.width = '100%';
-        els.loadingBar.style.animation = 'pulse 1.5s ease-in-out infinite';
-        els.loadingPercent.textContent = '';
-    } else {
-        els.loadingBar.style.animation = 'none';
-        const percent = options.percent || 0;
-        setLoadingProgress(percent);
-    }
-}
-
-function hideLoading() {
-    els.loadingOverlay.classList.add('hidden');
-}
-
-function setLoadingProgress(percent) {
-    const clamped = Math.min(100, Math.max(0, percent));
-    els.loadingBar.style.width = clamped + '%';
-    els.loadingPercent.textContent = Math.round(clamped) + '%';
-}
 // Initialization
 function init() {
     els.btnUpload.addEventListener('click', () => els.uploadInput.click());
