@@ -88,7 +88,7 @@ const els = {
 function showLoading(title = 'Processing...', options = {}) {
     els.loadingOverlay.classList.remove('hidden');
     els.loadingTitle.textContent = title;
-    
+
     if (options.indeterminate) {
         els.loadingBar.style.width = '100%';
         els.loadingBar.style.animation = 'pulse 1.5s ease-in-out infinite';
@@ -266,7 +266,9 @@ function processCSV(data) {
 
     for (let i = 1; i < state.allRows.length; i++) {
         const row = state.allRows[i];
-        if (!row || row.length <= COL.UPLOADED) continue;
+        // Only require essential columns (up to PHOTO_BOOK at index 23)
+        // Columns beyond that (NOTE_ANIS, MANUAL_CHECK, REASON, UPLOADED) are optional
+        if (!row || row.length <= COL.PHOTO_BOOK) continue;
 
         const bk = (row[COL.MANUAL_CHECK] || '').trim();
         let bi = (row[COL.NOTE_ANIS] || '').trim();
