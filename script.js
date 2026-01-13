@@ -266,7 +266,7 @@ function processCSV(data) {
         const bl = (row[COL.REASON] || '').trim();
         const firstName = (row[COL.FIRST_NAME] || '').trim();
 
-        const isBkEligible = ['Need Confirmation', 'Valid', ''].includes(bk);
+        const isBkEligible = ['Need Confirmation', 'Valid', 'Invalid', ''].includes(bk);
 
         if (i < 5) {
             console.log(
