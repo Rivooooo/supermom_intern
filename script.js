@@ -225,24 +225,13 @@ function handleFileUpload(e) {
     const file = e.target.files[0];
     if (!file) return;
 
-    showLoading('Reading CSV...', { percent: 0 });
-
     Papa.parse(file, {
         skipEmptyLines: true,
-        chunkSize: 1024 * 1024,
-        chunk: (results) => {
-            const cursor = results?.meta?.cursor;
-            if (typeof cursor === 'number' && file.size > 0) {
-                setLoadingProgress((cursor / file.size) * 100);
-            }
-        },
         complete: (results) => {
-            setLoadingProgress(100);
+            console.log('CSV parsed, rows:', results.data?.length);
             processCSV(results.data);
-            hideLoading();
         },
         error: (err) => {
-            hideLoading();
             console.error('CSV Error:', err);
             alert('Error parsing CSV file.');
         }
